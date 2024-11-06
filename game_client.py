@@ -1,3 +1,5 @@
+#game_client.py
+
 import pygame
 import socket
 from config import *
@@ -5,10 +7,10 @@ from enemy import Enemy
 from utils import load_scores, save_score
 
 class GameClient:
-    def __init__(self, host, port):
+    def __init__(self, host, port,nickname):
         pygame.init()
         self.screen = pygame.display.set_mode(WINDOW_SIZE)
-        pygame.display.set_caption("Dodge Game")
+        pygame.display.set_caption("Yasser's Adventure")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 36)
         
@@ -21,6 +23,7 @@ class GameClient:
         self.game_over = False
         self.enemies = []
         self.last_spawn_time = 0
+        self.nickname = nickname  # Store the player's nickname
         self.spawn_rate = INITIAL_SPAWN_RATE
         self.high_scores = load_scores()
 
@@ -65,28 +68,28 @@ class GameClient:
     def draw_game_over(self):
         # Clear the screen with the background color
         self.screen.fill(BACKGROUND_COLOR)
-        
+
         # Render "Game Over" message
         game_over_text = self.font.render('Game Over!', True, (0, 0, 0))
         self.screen.blit(
             game_over_text,
             (WINDOW_SIZE[0] // 2 - game_over_text.get_width() // 2, WINDOW_SIZE[1] // 2 - 60)
         )
-        
+
         # Render the player's final score
         score_text = self.font.render(f'Final Score: {self.score}', True, (0, 0, 0))
         self.screen.blit(
             score_text,
             (WINDOW_SIZE[0] // 2 - score_text.get_width() // 2, WINDOW_SIZE[1] // 2)
         )
-        
+
         # Render prompt to restart the game
         restart_text = self.font.render('Press SPACE to restart', True, (0, 0, 0))
         self.screen.blit(
             restart_text,
             (WINDOW_SIZE[0] // 2 - restart_text.get_width() // 2, WINDOW_SIZE[1] // 2 + 60)
         )
-        
+
         # Display high scores
         y_offset = WINDOW_SIZE[1] // 2 + 120
         title_text = self.font.render('High Scores:', True, (0, 0, 0))
@@ -94,11 +97,12 @@ class GameClient:
             title_text,
             (WINDOW_SIZE[0] // 2 - title_text.get_width() // 2, y_offset)
         )
-    
+
         # Render the top 5 high scores
         for i, score_data in enumerate(self.high_scores[:5]):
+            nickname = score_data.get("nickname", "Anonymous")  # Default to "Anonymous" if no nickname
             score = score_data["score"]
-            score_line = self.font.render(f'{i + 1}. {score}', True, (0, 0, 0))
+            score_line = self.font.render(f'{i + 1}. {nickname}: {score}', True, (0, 0, 0))
             self.screen.blit(
                 score_line,
                 (WINDOW_SIZE[0] // 2 - score_line.get_width() // 2, y_offset + 40 * (i + 1))
@@ -134,6 +138,6 @@ class GameClient:
             pygame.display.flip()
             self.clock.tick(60)
 
-        save_score(self.score)
+        save_score(self.score, self.nickname)
         pygame.quit()
         self.socket.close()

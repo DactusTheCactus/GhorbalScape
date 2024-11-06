@@ -13,9 +13,9 @@ def load_scores():
     except:
         return []
 
-def save_score(score):
+def save_score(score, nickname):
     scores = load_scores()
-    scores.append({"score": score})
+    scores.append({"score": score, "nickname": nickname})
     scores.sort(key=lambda x: x["score"], reverse=True)
     scores = scores[:10]  # Keep top 10 scores
     
