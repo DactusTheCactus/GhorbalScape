@@ -10,3 +10,10 @@ ENEMY_SIZE = 30
 ENEMY_SPEED = 5
 INITIAL_SPAWN_RATE = 1000
 SCORES_FILE = "highscores.json"
+POWERUP_SIZE = 20
+POWERUP_SPAWN_RATE = 10000  # Spawn every 10 seconds
+POWERUP_COLORS = {
+    'shield': (0, 255, 255),     # Cyan
+    'slow': (255, 255, 0),       # Yellow
+    'score_boost': (255, 165, 0)  # Orange
+}
