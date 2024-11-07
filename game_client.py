@@ -8,7 +8,7 @@ from power_up import PowerUp
 from utils import load_scores, save_score
 
 class GameClient:
-    def __init__(self, host, port,nickname):
+    def __init__(self, host, port, nickname):
         pygame.init()
         self.screen = pygame.display.set_mode(WINDOW_SIZE)
         pygame.display.set_caption("Yasser's Adventure")
@@ -48,7 +48,8 @@ class GameClient:
         if current_time - self.last_spawn_time > self.spawn_rate:
             self.enemies.append(Enemy())
             self.last_spawn_time = current_time
-            self.spawn_rate = max(400, self.spawn_rate - 1)
+            self.spawn_rate = max(400, self.spawn_rate - 1)       
+
     def spawn_power_ups(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_power_up_spawn > POWERUP_SPAWN_RATE:
@@ -99,6 +100,7 @@ class GameClient:
             self.score += 10  # Immediate score boost
             
     def check_collisions(self):
+        # First check if shield is active
         if self.active_effects['shield'] > pygame.time.get_ticks():
             return  # Ignore collisions while shield is active
             
@@ -107,7 +109,7 @@ class GameClient:
             enemy_rect = pygame.Rect(enemy.x, enemy.y, ENEMY_SIZE, ENEMY_SIZE)
             if player_rect.colliderect(enemy_rect):
                 self.game_over = True
-                save_score(self.score, self.nickname)
+                save_score(self.score, self.nickname)  # Pass both score and nickname
                 break
                 
     def draw_power_ups(self):
@@ -135,15 +137,6 @@ class GameClient:
             if enemy.update():
                 self.enemies.remove(enemy)
                 self.score += 1
-
-    def check_collisions(self):
-        player_rect = pygame.Rect(self.x, self.y, PLAYER_SIZE, PLAYER_SIZE)
-        for enemy in self.enemies:
-            enemy_rect = pygame.Rect(enemy.x, enemy.y, ENEMY_SIZE, ENEMY_SIZE)
-            if player_rect.colliderect(enemy_rect):
-                self.game_over = True
-                save_score(self.score)
-                break
 
     def draw_game(self):
         self.screen.fill(BACKGROUND_COLOR)
@@ -184,18 +177,18 @@ class GameClient:
         score_text = self.font.render(f'Final Score: {self.score}', True, (0, 0, 0))
         self.screen.blit(
             score_text,
-            (WINDOW_SIZE[0] // 2 - score_text.get_width() // 2, WINDOW_SIZE[1] // 2)
+            (WINDOW_SIZE[0] // 2 - score_text.get_width() // 2, WINDOW_SIZE[1] // 2 - 30)
         )
 
         # Render prompt to restart the game
         restart_text = self.font.render('Press SPACE to restart', True, (0, 0, 0))
         self.screen.blit(
             restart_text,
-            (WINDOW_SIZE[0] // 2 - restart_text.get_width() // 2, WINDOW_SIZE[1] // 2 + 60)
+            (WINDOW_SIZE[0] // 2 - restart_text.get_width() // 2, WINDOW_SIZE[1] // 2)
         )
 
         # Display high scores
-        y_offset = WINDOW_SIZE[1] // 2 + 120
+        y_offset = WINDOW_SIZE[1] // 2 + 60
         title_text = self.font.render('High Scores:', True, (0, 0, 0))
         self.screen.blit(
             title_text,
@@ -204,8 +197,8 @@ class GameClient:
 
         # Render the top 5 high scores
         for i, score_data in enumerate(self.high_scores[:5]):
-            nickname = score_data.get("nickname", "Anonymous")  # Default to "Anonymous" if no nickname
             score = score_data["score"]
+            nickname = score_data.get("nickname", "Anonymous")  # Default to "Anonymous" if no nickname
             score_line = self.font.render(f'{i + 1}. {nickname}: {score}', True, (0, 0, 0))
             self.screen.blit(
                 score_line,
@@ -245,6 +238,6 @@ class GameClient:
             pygame.display.flip()
             self.clock.tick(60)
 
-        save_score(self.score, self.nickname)
+        save_score(self.score, self.nickname)  # Pass both score and nickname here too
         pygame.quit()
         self.socket.close()
